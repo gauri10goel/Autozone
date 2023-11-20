@@ -1,2 +1,0 @@
-# Autozone
-AutoZone coding test
