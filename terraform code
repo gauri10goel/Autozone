@@ -1,0 +1,72 @@
+# main.tf
+
+provider "google" {
+  credentials = file("<path-to-service-account-key-json>")
+  project     = var.project_id
+  region      = var.region
+}
+
+module "pubsub_topic" {
+  source           = "./modules/pubsub-topic"
+  topic_name       = var.pubsub_topic_name
+  labels           = var.labels
+  message_encoding = "JSON"  # You can adjust this based on your requirements
+}
+
+# variables.tf
+
+variable "project_id" {
+  description = "Google Cloud Project ID"
+}
+
+variable "region" {
+  description = "Google Cloud region"
+}
+
+variable "pubsub_topic_name" {
+  description = "Name of the Pub/Sub topic"
+}
+
+variable "labels" {
+  description = "Labels to apply to the Pub/Sub topic"
+  type        = map(string)
+  default     = {}
+}
+
+# modules/pubsub-topic/main.tf
+
+variable "topic_name" {
+  description = "Name of the Pub/Sub topic"
+}
+
+variable "labels" {
+  description = "Labels to apply to the Pub/Sub topic"
+  type        = map(string)
+  default     = {}
+}
+
+variable "message_encoding" {
+  description = "Message encoding for the Pub/Sub topic"
+  default     = "JSON"
+}
+
+resource "google_pubsub_topic" "pubsub_topic" {
+  name   = var.topic_name
+  labels = var.labels
+
+  message_storage_policy {
+    allowed_persistence_regions = ["us-central1"]  # Adjust the region based on your needs
+  }
+
+  encoding_config {
+    encoding = var.message_encoding
+  }
+}
+
+# outputs.tf
+
+output "pubsub_topic_name" {
+  description = "Name of the created Pub/Sub topic"
+  value       = module.pubsub_topic.topic_name
+}
+
